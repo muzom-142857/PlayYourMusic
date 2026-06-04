@@ -13,7 +13,7 @@ const createSchema = z.object({
 });
 
 const listSchema = z.object({
-  sort: z.enum(["recommended", "newest", "popular", "most_tracks"]).default("recommended"),
+  sort: z.enum(["recommended", "following", "newest", "popular", "most_tracks"]).default("recommended"),
   category: z.string().optional(),
   tag: z.string().optional(),
   page: z.coerce.number().min(1).default(1),
@@ -51,6 +51,29 @@ export async function GET(request: Request) {
       offset,
     });
     const total = await prisma.playlist.count({ where });
+    return NextResponse.json({ items, total, hasMore: offset + items.length < total });
+  }
+
+  if (sort === "following") {
+    if (!session?.user?.id) {
+      return NextResponse.json({ items: [], total: 0, hasMore: false });
+    }
+    const follows = await prisma.follow.findMany({
+      where: { followerId: session.user.id },
+      select: { followingId: true },
+    });
+    const followedIds = follows.map((f) => f.followingId);
+    const followingWhere = { ...where, userId: { in: followedIds } };
+    const [items, total] = await Promise.all([
+      prisma.playlist.findMany({
+        where: followingWhere,
+        orderBy: [{ createdAt: "desc" }],
+        take: limit,
+        skip: offset,
+        include,
+      }),
+      prisma.playlist.count({ where: followingWhere }),
+    ]);
     return NextResponse.json({ items, total, hasMore: offset + items.length < total });
   }
 

@@ -1,26 +1,29 @@
 "use client";
 
+import { useState, useCallback } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useSession } from "next-auth/react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MasonryGrid } from "@/components/playlist/MasonryGrid";
 import type { PlaylistDTO, PaginatedResponse } from "@/types";
 
-async function fetchPlaylists(page: number) {
-  const res = await fetch(`/api/playlists?sort=recommended&limit=20&page=${page}`);
+type FeedTab = "recommended" | "following" | "newest";
+
+async function fetchPlaylists(sort: FeedTab, page: number) {
+  const res = await fetch(`/api/playlists?sort=${sort}&limit=20&page=${page}`);
   if (!res.ok) throw new Error("Failed to fetch playlists");
   return res.json() as Promise<PaginatedResponse<PlaylistDTO>>;
 }
 
-export function HomeFeed() {
+function Feed({ sort }: { sort: FeedTab }) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useInfiniteQuery({
-    queryKey: ["playlists", "home"],
-    queryFn: ({ pageParam }) => fetchPlaylists(pageParam as number),
+    queryKey: ["playlists", sort],
+    queryFn: ({ pageParam }) => fetchPlaylists(sort, pageParam as number),
     initialPageParam: 1,
     getNextPageParam: (last, pages) => (last.hasMore ? pages.length + 1 : undefined),
   });
 
-  const allPlaylists = data?.pages.flatMap((p) => p.items) ?? [];
-
+  const all = data?.pages.flatMap((p) => p.items) ?? [];
   const loadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
@@ -33,28 +36,33 @@ export function HomeFeed() {
     );
   }
 
-  if (status === "error") {
+  if (all.length === 0) {
     return (
-      <div className="py-16 text-center text-muted-foreground">
-        플레이리스트를 불러오지 못했습니다.
+      <div className="py-16 text-center text-sm text-muted-foreground">
+        {sort === "following"
+          ? "팔로우한 사람의 플레이리스트가 없습니다. 다른 사람을 팔로우해보세요!"
+          : "아직 플레이리스트가 없습니다. 첫 번째를 만들어보세요!"}
       </div>
     );
   }
 
-  if (allPlaylists.length === 0) {
-    return (
-      <div className="py-16 text-center text-muted-foreground">
-        아직 플레이리스트가 없습니다. 첫 번째 플레이리스트를 만들어보세요!
-      </div>
-    );
-  }
+  return <MasonryGrid playlists={all} hasMore={hasNextPage} isLoading={isFetchingNextPage} onLoadMore={loadMore} />;
+}
+
+export function HomeFeed() {
+  const { data: session } = useSession();
+  const [activeTab, setActiveTab] = useState<FeedTab>("recommended");
 
   return (
-    <MasonryGrid
-      playlists={allPlaylists}
-      hasMore={hasNextPage}
-      isLoading={isFetchingNextPage}
-      onLoadMore={loadMore}
-    />
+    <div>
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as FeedTab)} className="mb-6">
+        <TabsList>
+          <TabsTrigger value="recommended">추천</TabsTrigger>
+          {session?.user && <TabsTrigger value="following">팔로잉</TabsTrigger>}
+          <TabsTrigger value="newest">최신</TabsTrigger>
+        </TabsList>
+      </Tabs>
+      <Feed sort={activeTab} />
+    </div>
   );
 }
