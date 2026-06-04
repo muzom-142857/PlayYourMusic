@@ -1,21 +1,17 @@
-import { setRequestLocale } from "next-intl/server";
-import { getTranslations } from "next-intl/server";
+import { setRequestLocale, getTranslations } from "next-intl/server";
+import { HomeFeed } from "./HomeFeed";
 
-type Props = {
-  params: Promise<{ locale: string }>;
-};
+type Props = { params: Promise<{ locale: string }> };
 
 export default async function HomePage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-
   const t = await getTranslations("home");
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-8">
-      <h1 className="text-4xl font-bold tracking-tight">PlayYourMusic</h1>
-      <p className="text-muted-foreground text-lg">{t("trending")}</p>
-      <p className="text-sm text-muted-foreground">Phase 1 setup complete ✓</p>
-    </main>
+    <div className="px-4 py-6 lg:px-6">
+      <h1 className="mb-6 text-2xl font-bold tracking-tight">{t("trending")}</h1>
+      <HomeFeed />
+    </div>
   );
 }

@@ -4,6 +4,11 @@ import { routing } from "@/i18n/routing";
 import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { Providers } from "@/components/common/Providers";
+import { ColorThemeProvider } from "@/components/common/ColorThemeProvider";
+import { Header } from "@/components/layout/Header";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { BottomNav } from "@/components/layout/BottomNav";
+import { GlobalPlayer } from "@/components/player/GlobalPlayer";
 
 type Props = {
   children: React.ReactNode;
@@ -25,7 +30,21 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <Providers>{children}</Providers>
+      <Providers>
+        <ColorThemeProvider>
+          <div className="flex min-h-screen flex-col">
+            <Header />
+            <div className="flex flex-1">
+              <Sidebar />
+              <main className="flex-1 min-w-0 pb-32 lg:pb-24">
+                {children}
+              </main>
+            </div>
+          </div>
+          <GlobalPlayer />
+          <BottomNav />
+        </ColorThemeProvider>
+      </Providers>
     </NextIntlClientProvider>
   );
 }
