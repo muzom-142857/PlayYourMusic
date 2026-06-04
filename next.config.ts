@@ -3,7 +3,7 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
-const nextConfig: NextConfig = {
+const baseConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**.cloudflare.com" },
@@ -18,10 +18,20 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {
-    serverActions: {
-      bodySizeLimit: "10mb",
-    },
+    serverActions: { bodySizeLimit: "10mb" },
   },
 };
 
-export default withNextIntl(nextConfig);
+async function buildConfig(): Promise<NextConfig> {
+  if (process.env.NODE_ENV === "production") {
+    const withSerwist = (await import("@serwist/next")).default;
+    return withSerwist({
+      swSrc: "src/sw.ts",
+      swDest: "public/sw.js",
+      reloadOnOnline: true,
+    })(withNextIntl(baseConfig));
+  }
+  return withNextIntl(baseConfig);
+}
+
+export default buildConfig();

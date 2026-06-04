@@ -1,10 +1,29 @@
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
+import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { UserProfile } from "./UserProfile";
 
 type Props = { params: Promise<{ locale: string; username: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { username } = await params;
+  const user = await prisma.user.findUnique({
+    where: { username },
+    select: { name: true, bio: true, avatarUrl: true },
+  });
+  if (!user) return {};
+  return {
+    title: user.name,
+    description: user.bio ?? `${user.name}의 플레이리스트`,
+    openGraph: {
+      title: `${user.name} | PlayYourMusic`,
+      description: user.bio ?? `${user.name}의 플레이리스트`,
+      images: user.avatarUrl ? [{ url: user.avatarUrl }] : [],
+    },
+  };
+}
 
 export default async function UserPage({ params }: Props) {
   const { locale, username } = await params;
