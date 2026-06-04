@@ -1,0 +1,90 @@
+{
+  "nav": {
+    "home": "Home",
+    "explore": "Explore",
+    "search": "Search",
+    "library": "My Library",
+    "createPlaylist": "Create Playlist",
+    "login": "Login",
+    "logout": "Logout",
+    "settings": "Settings"
+  },
+  "home": {
+    "trending": "Trending Playlists",
+    "following": "From People You Follow",
+    "recommended": "Recommended for You"
+  },
+  "playlist": {
+    "tracks": "Tracks",
+    "likes": "Likes",
+    "comments": "Comments",
+    "play": "Play",
+    "addTrack": "Add Track",
+    "sharePlaylist": "Share Playlist",
+    "likePlaylist": "Like",
+    "unlikePlaylist": "Unlike",
+    "editPlaylist": "Edit",
+    "deletePlaylist": "Delete",
+    "noTracks": "No tracks yet",
+    "addFirstTrack": "Add your first track",
+    "private": "Private",
+    "public": "Public",
+    "createdBy": "Playlist by {name}"
+  },
+  "player": {
+    "queue": "Queue",
+    "shuffle": "Shuffle",
+    "repeat": "Repeat",
+    "volume": "Volume",
+    "externalLink": "Open in external app",
+    "nowPlaying": "Now Playing"
+  },
+  "search": {
+    "placeholder": "Search playlists, tracks, artists, or users",
+    "results": "Results",
+    "noResults": "No results found",
+    "filters": {
+      "all": "All",
+      "playlists": "Playlists",
+      "users": "Users",
+      "category": "Category",
+      "sort": {
+        "relevance": "Relevance",
+        "popular": "Most Popular",
+        "newest": "Newest",
+        "most_tracks": "Most Tracks"
+      }
+    }
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "continueWith": "Continue with {provider}",
+    "or": "or",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?"
+  },
+  "user": {
+    "follow": "Follow",
+    "unfollow": "Unfollow",
+    "followers": "Followers",
+    "following": "Following",
+    "playlists": "Playlists",
+    "editProfile": "Edit Profile"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Try again",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "share": "Share",
+    "copy": "Copy",
+    "copied": "Copied!"
+  }
+}
