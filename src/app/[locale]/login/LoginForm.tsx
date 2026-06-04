@@ -11,11 +11,18 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
+function sanitizeCallbackUrl(raw: string | null, fallback: string): string {
+  if (!raw) return fallback;
+  // Allow only same-origin relative paths (starts with / but not //)
+  if (raw.startsWith("/") && !raw.startsWith("//")) return raw;
+  return fallback;
+}
+
 export function LoginForm() {
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") ?? `/${locale}`;
+  const callbackUrl = sanitizeCallbackUrl(searchParams.get("callbackUrl"), `/${locale}`);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

@@ -30,14 +30,23 @@ export async function POST(request: Request) {
     if (!parsed.success) return NextResponse.json({ error: "Invalid" }, { status: 400 });
 
     const { playlistId, orderedIds } = parsed.data;
-    const playlist = await prisma.playlist.findUnique({ where: { id: playlistId }, select: { userId: true } });
+    const playlist = await prisma.playlist.findUnique({
+      where: { id: playlistId },
+      select: { userId: true, tracks: { select: { id: true } } },
+    });
     if (!playlist || playlist.userId !== session.user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    // Reject any track IDs not belonging to this playlist (IDOR guard)
+    const ownedIds = new Set(playlist.tracks.map((t) => t.id));
+    if (orderedIds.some((id) => !ownedIds.has(id))) {
+      return NextResponse.json({ error: "Invalid track IDs" }, { status: 400 });
+    }
+
     await prisma.$transaction(
       orderedIds.map((trackId, i) =>
-        prisma.track.update({ where: { id: trackId }, data: { position: i } })
+        prisma.track.update({ where: { id: trackId, playlistId }, data: { position: i } })
       )
     );
     return NextResponse.json({ ok: true });
