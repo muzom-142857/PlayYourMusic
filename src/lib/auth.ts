@@ -132,32 +132,45 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
     Credentials({
       async authorize(credentials) {
-        const parsed = credentialsSchema.safeParse(credentials);
-        if (!parsed.success) return null;
+        try {
+          const parsed = credentialsSchema.safeParse(credentials);
+          if (!parsed.success) return null;
 
-        const user = await prisma.user.findUnique({
-          where: { email: parsed.data.email },
-          include: { accounts: { where: { provider: "credentials" } } },
-        });
-        if (!user) return null;
+          const user = await prisma.user.findUnique({
+            where: { email: parsed.data.email },
+            include: { accounts: true },
+          });
+          if (!user) return null;
 
-        const credAccount = user.accounts[0];
-        if (!credAccount?.access_token) return null;
+          const credAccount = user.accounts.find((a) => a.provider === "credentials");
+          if (!credAccount?.access_token) return null;
 
-        const valid = await bcrypt.compare(parsed.data.password, credAccount.access_token);
-        if (!valid) return null;
+          const valid = await bcrypt.compare(parsed.data.password, credAccount.access_token);
+          if (!valid) return null;
 
-        return { id: user.id, email: user.email, name: user.name };
+          return { id: user.id, email: user.email, name: user.name };
+        } catch {
+          return null;
+        }
       },
     }),
   ],
-  session: { strategy: "database" },
+  // JWT strategy: avoids database session writes which are buggy
+  // with credentials provider in next-auth v5 beta.
+  // OAuth user data (accounts, users) is still persisted via the adapter.
+  session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
   },
   callbacks: {
-    session({ session, user }) {
-      if (user && session.user) session.user.id = user.id;
+    async jwt({ token, user, account }) {
+      // On sign-in, persist user id + OAuth provider into the token
+      if (user?.id) token.id = user.id;
+      if (account?.provider) token.provider = account.provider;
+      return token;
+    },
+    session({ session, token }) {
+      if (token?.id && session.user) session.user.id = token.id as string;
       return session;
     },
   },

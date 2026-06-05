@@ -282,7 +282,7 @@ export function SearchClient({ categories }: SearchClientProps) {
             ) : (
               <>
                 {users.length > 0 && (
-                  <h2 className="mb-4 text-sm font-semibold text-muted-foreground uppercase tracking-wide">플레이리스트</h2>
+                  <h2 className="mb-4 text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t("filters.playlists")}</h2>
                 )}
                 <MasonryGrid
                   playlists={playlists}

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ function sanitizeCallbackUrl(raw: string | null, fallback: string): string {
 
 export function LoginForm() {
   const locale = useLocale();
+  const t = useTranslations("auth");
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = sanitizeCallbackUrl(searchParams.get("callbackUrl"), `/${locale}`);
@@ -33,7 +34,7 @@ export function LoginForm() {
     try {
       await signIn(provider, { callbackUrl });
     } catch {
-      toast.error("로그인에 실패했습니다. 다시 시도해주세요.");
+      toast.error(t("loginFailed"));
       setIsLoading(null);
     }
   };
@@ -48,15 +49,15 @@ export function LoginForm() {
         redirect: false,
         callbackUrl,
       });
-      if (!res || res.error) {
-        toast.error("이메일 또는 비밀번호가 올바르지 않습니다.");
+      if (res?.error) {
+        toast.error(t("invalidCredentials"));
         setIsLoading(null);
       } else {
-        router.push(callbackUrl);
         router.refresh();
+        router.push(callbackUrl);
       }
     } catch {
-      toast.error("이메일 또는 비밀번호가 올바르지 않습니다.");
+      toast.error(t("invalidCredentials"));
       setIsLoading(null);
     }
   };
@@ -81,7 +82,7 @@ export function LoginForm() {
             {isLoading === id ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : null}
-            {label}로 계속하기
+            {t("continueWith", { provider: label })}
           </Button>
         ))}
       </div>
@@ -89,14 +90,14 @@ export function LoginForm() {
       <div className="relative">
         <Separator />
         <span className="absolute inset-0 flex items-center justify-center">
-          <span className="bg-background px-2 text-xs text-muted-foreground">또는</span>
+          <span className="bg-background px-2 text-xs text-muted-foreground">{t("or")}</span>
         </span>
       </div>
 
       {/* Email / password */}
       <form onSubmit={handleCredentials} className="space-y-3">
         <div className="space-y-1">
-          <Label htmlFor="email">이메일</Label>
+          <Label htmlFor="email">{t("email")}</Label>
           <Input
             id="email"
             type="email"
@@ -107,7 +108,7 @@ export function LoginForm() {
           />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="password">비밀번호</Label>
+          <Label htmlFor="password">{t("password")}</Label>
           <Input
             id="password"
             type="password"
@@ -119,14 +120,14 @@ export function LoginForm() {
         </div>
         <Button type="submit" className="w-full" disabled={!!isLoading}>
           {isLoading === "credentials" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          로그인
+          {t("login")}
         </Button>
       </form>
 
       <p className="text-center text-sm text-muted-foreground">
-        계정이 없으신가요?{" "}
+        {t("noAccount")}{" "}
         <Link href={`/${locale}/register`} className="text-foreground underline underline-offset-4 hover:text-primary">
-          회원가입
+          {t("registerLink")}
         </Link>
       </p>
     </div>

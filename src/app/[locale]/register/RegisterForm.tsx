@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { toast } from "sonner";
 
 export function RegisterForm() {
   const locale = useLocale();
+  const t = useTranslations("auth");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,7 +21,7 @@ export function RegisterForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 8) {
-      toast.error("비밀번호는 8자 이상이어야 합니다.");
+      toast.error(t("passwordTooShort"));
       return;
     }
     setIsLoading(true);
@@ -30,9 +31,9 @@ export function RegisterForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
       });
-      const data = await res.json();
+      const data: { error?: string } = await res.json();
       if (!res.ok) {
-        toast.error(data.error ?? "회원가입에 실패했습니다.");
+        toast.error(data.error ?? t("registerFailed"));
         return;
       }
       // Auto sign-in after registration
@@ -43,13 +44,13 @@ export function RegisterForm() {
         callbackUrl: `/${locale}`,
       });
       if (loginRes?.error) {
-        toast.success("회원가입이 완료되었습니다. 로그인해주세요.");
+        toast.success(t("registerSuccess"));
         window.location.href = `/${locale}/login`;
       } else {
         window.location.href = `/${locale}`;
       }
     } catch {
-      toast.error("오류가 발생했습니다. 다시 시도해주세요.");
+      toast.error(t("registerError"));
     } finally {
       setIsLoading(false);
     }
@@ -58,7 +59,7 @@ export function RegisterForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-1">
-        <Label htmlFor="name">이름</Label>
+        <Label htmlFor="name">{t("name")}</Label>
         <Input
           id="name"
           type="text"
@@ -69,7 +70,7 @@ export function RegisterForm() {
         />
       </div>
       <div className="space-y-1">
-        <Label htmlFor="email">이메일</Label>
+        <Label htmlFor="email">{t("email")}</Label>
         <Input
           id="email"
           type="email"
@@ -80,7 +81,7 @@ export function RegisterForm() {
         />
       </div>
       <div className="space-y-1">
-        <Label htmlFor="password">비밀번호 (8자 이상)</Label>
+        <Label htmlFor="password">{t("passwordHint")}</Label>
         <Input
           id="password"
           type="password"
@@ -93,12 +94,12 @@ export function RegisterForm() {
       </div>
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        회원가입
+        {t("register")}
       </Button>
       <p className="text-center text-sm text-muted-foreground">
-        이미 계정이 있으신가요?{" "}
+        {t("hasAccount")}{" "}
         <Link href={`/${locale}/login`} className="text-foreground underline underline-offset-4 hover:text-primary">
-          로그인
+          {t("loginLink")}
         </Link>
       </p>
     </form>

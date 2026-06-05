@@ -92,7 +92,13 @@
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
     "loginLink": "Login",
-    "registerLink": "Sign Up"
+    "registerLink": "Sign Up",
+    "loginFailed": "Login failed. Please try again.",
+    "invalidCredentials": "Invalid email or password.",
+    "passwordTooShort": "Password must be at least 8 characters.",
+    "registerFailed": "Registration failed. Please try again.",
+    "registerSuccess": "Registration complete. Please log in.",
+    "registerError": "An error occurred. Please try again."
   },
   "user": {
     "follow": "Follow",
