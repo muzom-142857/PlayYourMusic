@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { setRequestLocale } from "next-intl/server";
 import { prisma } from "@/lib/db";
 import { SearchClient } from "./SearchClient";
