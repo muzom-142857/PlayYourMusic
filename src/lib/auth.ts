@@ -1,4 +1,5 @@
 import NextAuth from "next-auth";
+import type { NextAuthConfig } from "next-auth";
 import type { Adapter } from "next-auth/adapters";
 import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
@@ -12,13 +13,34 @@ const credentialsSchema = z.object({
   password: z.string().min(8),
 });
 
+function configuredEnv(...names: string[]): string | undefined {
+  for (const name of names) {
+    const value = process.env[name]?.trim();
+    if (!value) continue;
+    if (value.includes("여기에_입력")) continue;
+    return value;
+  }
+  return undefined;
+}
+
+const googleClientId = configuredEnv("GOOGLE_CLIENT_ID", "AUTH_GOOGLE_ID");
+const googleClientSecret = configuredEnv("GOOGLE_CLIENT_SECRET", "AUTH_GOOGLE_SECRET");
+const githubClientId = configuredEnv("GITHUB_CLIENT_ID", "AUTH_GITHUB_ID");
+const githubClientSecret = configuredEnv("GITHUB_CLIENT_SECRET", "AUTH_GITHUB_SECRET");
+const hasGoogleOAuth = Boolean(googleClientId && googleClientSecret);
+const hasGitHubOAuth = Boolean(githubClientId && githubClientSecret);
+
 // ── Field mapping helpers ────────────────────────────────────────────────────
 // Our schema uses `avatarUrl` instead of Auth.js's expected `image` field.
 // PrismaAdapter would pass `image` to Prisma.user.create/update and throw.
 // We build a minimal hand-rolled adapter that handles the mapping correctly.
 
 async function generateUsername(email: string): Promise<string> {
-  const base = email.split("@")[0].replace(/[^a-z0-9_]/gi, "").toLowerCase() || "user";
+  const base =
+    email
+      .split("@")[0]
+      .replace(/[^a-z0-9_]/gi, "")
+      .toLowerCase() || "user";
   let username = base;
   let n = 1;
   while (await prisma.user.findUnique({ where: { username } })) {
@@ -82,7 +104,9 @@ const adapter: Adapter = {
     await prisma.account.create({ data: account });
   },
   async unlinkAccount({ provider, providerAccountId }) {
-    await prisma.account.delete({ where: { provider_providerAccountId: { provider, providerAccountId } } });
+    await prisma.account.delete({
+      where: { provider_providerAccountId: { provider, providerAccountId } },
+    });
   },
   async createSession(data) {
     return prisma.session.create({ data });
@@ -119,43 +143,60 @@ const adapter: Adapter = {
   },
 };
 
+const providers: NextAuthConfig["providers"] = [
+  Credentials({
+    async authorize(credentials) {
+      try {
+        const parsed = credentialsSchema.safeParse(credentials);
+        if (!parsed.success) return null;
+
+        const user = await prisma.user.findUnique({
+          where: { email: parsed.data.email },
+          include: { accounts: true },
+        });
+        if (!user) return null;
+
+        const credAccount = user.accounts.find((a) => a.provider === "credentials");
+        if (!credAccount?.access_token) return null;
+
+        const valid = await bcrypt.compare(parsed.data.password, credAccount.access_token);
+        if (!valid) return null;
+
+        return { id: user.id, email: user.email, name: user.name };
+      } catch {
+        return null;
+      }
+    },
+  }),
+];
+
+if (hasGoogleOAuth) {
+  providers.push(
+    Google({
+      clientId: googleClientId!,
+      clientSecret: googleClientSecret!,
+    })
+  );
+}
+
+if (hasGitHubOAuth) {
+  providers.push(
+    GitHub({
+      clientId: githubClientId!,
+      clientSecret: githubClientSecret!,
+    })
+  );
+}
+
+export const enabledOAuthProviders = {
+  google: hasGoogleOAuth,
+  github: hasGitHubOAuth,
+};
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter,
   secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
-  providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-    GitHub({
-      clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-    }),
-    Credentials({
-      async authorize(credentials) {
-        try {
-          const parsed = credentialsSchema.safeParse(credentials);
-          if (!parsed.success) return null;
-
-          const user = await prisma.user.findUnique({
-            where: { email: parsed.data.email },
-            include: { accounts: true },
-          });
-          if (!user) return null;
-
-          const credAccount = user.accounts.find((a) => a.provider === "credentials");
-          if (!credAccount?.access_token) return null;
-
-          const valid = await bcrypt.compare(parsed.data.password, credAccount.access_token);
-          if (!valid) return null;
-
-          return { id: user.id, email: user.email, name: user.name };
-        } catch {
-          return null;
-        }
-      },
-    }),
-  ],
+  providers,
   // JWT strategy: avoids database session writes which are buggy
   // with credentials provider in next-auth v5 beta.
   // OAuth user data (accounts, users) is still persisted via the adapter.
