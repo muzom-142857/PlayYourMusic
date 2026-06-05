@@ -120,7 +120,7 @@ export function PlaylistCard({ playlist, onPlay, style }: PlaylistCardProps) {
               <div className="flex flex-wrap gap-1">
                 {playlist.categories.slice(0, 3).map((cat) => (
                   <Badge key={cat.id} variant="secondary" className="text-[10px] px-1.5 py-0">
-                    {cat.emoji} {cat.name}
+                    {cat.name}
                   </Badge>
                 ))}
               </div>

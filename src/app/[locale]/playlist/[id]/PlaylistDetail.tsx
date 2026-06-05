@@ -158,7 +158,7 @@ export function PlaylistDetail({ playlist: initialPlaylist, isOwner }: PlaylistD
           {playlist.categories.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {playlist.categories.map((cat) => (
-                <Badge key={cat.id} variant="secondary">{cat.emoji} {cat.name}</Badge>
+                <Badge key={cat.id} variant="secondary">{cat.name}</Badge>
               ))}
               {playlist.tags.map((tag) => (
                 <Badge key={tag.id} variant="outline" className="text-xs">#{tag.name}</Badge>

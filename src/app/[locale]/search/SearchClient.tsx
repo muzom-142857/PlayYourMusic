@@ -183,7 +183,7 @@ export function SearchClient({ categories }: SearchClientProps) {
                   : "border-border text-muted-foreground hover:border-foreground"
               )}
             >
-              {cat.emoji} {cat.name}
+              {cat.name}
             </button>
           ))}
 

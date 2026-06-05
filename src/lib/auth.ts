@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
+import type { Adapter, AdapterUser } from "next-auth/adapters";
 import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
 import Credentials from "next-auth/providers/credentials";
@@ -12,8 +13,28 @@ const credentialsSchema = z.object({
   password: z.string().min(8),
 });
 
+async function generateUsername(email: string): Promise<string> {
+  const base = email.split("@")[0].replace(/[^a-z0-9_]/gi, "").toLowerCase() || "user";
+  let username = base;
+  let n = 1;
+  while (await prisma.user.findUnique({ where: { username } })) {
+    username = `${base}${n++}`;
+  }
+  return username;
+}
+
+// Wrap PrismaAdapter to auto-generate username (required field unknown to Auth.js)
+const baseAdapter = PrismaAdapter(prisma) as Adapter;
+const adapter: Adapter = {
+  ...baseAdapter,
+  async createUser(user: AdapterUser) {
+    const username = await generateUsername(user.email ?? "user");
+    return baseAdapter.createUser!({ ...user, username } as AdapterUser);
+  },
+};
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  adapter,
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -69,25 +90,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return session;
     },
-    async signIn({ user, account }) {
-      if (account?.provider !== "credentials" && user.email) {
-        // Auto-generate username from email for OAuth sign-ins
-        const existingUser = await prisma.user.findUnique({
-          where: { email: user.email },
-        });
-        if (!existingUser && user.name && user.email) {
-          const baseUsername = user.email.split("@")[0].replace(/[^a-z0-9_]/gi, "").toLowerCase();
-          let username = baseUsername;
-          let suffix = 1;
-          while (await prisma.user.findUnique({ where: { username } })) {
-            username = `${baseUsername}${suffix++}`;
-          }
-          await prisma.user.update({
-            where: { email: user.email },
-            data: { username },
-          }).catch(() => null);
-        }
-      }
+    async signIn() {
       return true;
     },
   },

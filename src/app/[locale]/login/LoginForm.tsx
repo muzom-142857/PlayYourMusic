@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import { Loader2 } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +14,6 @@ import { toast } from "sonner";
 
 function sanitizeCallbackUrl(raw: string | null, fallback: string): string {
   if (!raw) return fallback;
-  // Allow only same-origin relative paths (starts with / but not //)
   if (raw.startsWith("/") && !raw.startsWith("//")) return raw;
   return fallback;
 }
@@ -30,31 +30,40 @@ export function LoginForm() {
 
   const handleOAuth = async (provider: string) => {
     setIsLoading(provider);
-    await signIn(provider, { callbackUrl });
+    try {
+      await signIn(provider, { callbackUrl });
+    } catch {
+      toast.error("로그인에 실패했습니다. 다시 시도해주세요.");
+      setIsLoading(null);
+    }
   };
 
   const handleCredentials = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading("credentials");
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-      callbackUrl,
-    });
-    if (res?.error) {
+    try {
+      const res = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+        callbackUrl,
+      });
+      if (!res || res.error) {
+        toast.error("이메일 또는 비밀번호가 올바르지 않습니다.");
+        setIsLoading(null);
+      } else {
+        router.push(callbackUrl);
+        router.refresh();
+      }
+    } catch {
       toast.error("이메일 또는 비밀번호가 올바르지 않습니다.");
       setIsLoading(null);
-    } else {
-      router.push(callbackUrl);
     }
   };
 
   const oauthProviders = [
     { id: "google", label: "Google" },
-    { id: "spotify", label: "Spotify" },
     { id: "github", label: "GitHub" },
-    { id: "apple", label: "Apple" },
   ];
 
   return (
@@ -113,6 +122,13 @@ export function LoginForm() {
           로그인
         </Button>
       </form>
+
+      <p className="text-center text-sm text-muted-foreground">
+        계정이 없으신가요?{" "}
+        <Link href={`/${locale}/register`} className="text-foreground underline underline-offset-4 hover:text-primary">
+          회원가입
+        </Link>
+      </p>
     </div>
   );
 }

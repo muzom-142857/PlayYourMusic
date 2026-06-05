@@ -86,7 +86,7 @@ export async function GET(request: Request) {
             // eslint-disable-next-line @next/next/no-img-element
             <img src={playlist.coverUrl} width={320} height={320} style={{ objectFit: "cover" }} alt="" />
           ) : (
-            <div style={{ fontSize: 80, color: "#444" }}>♪</div>
+            <div style={{ fontSize: 80, color: "#444", fontFamily: "sans-serif" }}>PYM</div>
           )}
         </div>
 
@@ -106,7 +106,7 @@ export async function GET(request: Request) {
                     color: "#ccc",
                   }}
                 >
-                  {c.emoji} {c.name}
+                  {c.name}
                 </div>
               ))}
             </div>
@@ -148,8 +148,8 @@ export async function GET(request: Request) {
 
           {/* Stats */}
           <div style={{ display: "flex", gap: 24, color: "#666", fontSize: 18, marginTop: 4 }}>
-            <span>🎵 {playlist.trackCount} tracks</span>
-            <span>❤️ {playlist.likeCount} likes</span>
+            <span>{playlist.trackCount} tracks</span>
+            <span>{playlist.likeCount} likes</span>
           </div>
 
           {/* Creator */}

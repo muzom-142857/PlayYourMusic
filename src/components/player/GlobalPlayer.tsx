@@ -53,7 +53,7 @@ export function GlobalPlayer() {
               >
                 <Avatar className="h-9 w-9 rounded-md shrink-0">
                   <AvatarImage src={currentTrack.thumbnailUrl ?? undefined} alt={currentTrack.title} />
-                  <AvatarFallback className="rounded-md text-xs">♪</AvatarFallback>
+                  <AvatarFallback className="rounded-md text-xs">M</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium leading-tight">{currentTrack.title}</p>

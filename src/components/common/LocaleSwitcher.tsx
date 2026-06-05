@@ -10,10 +10,12 @@ export function LocaleSwitcher() {
   const pathname = usePathname();
 
   const toggle = () => {
-    const next = locale === "ko" ? "en" : "ko";
-    // Replace current locale prefix in path
-    const newPath = pathname.replace(`/${locale}`, `/${next}`);
-    router.push(newPath === pathname ? `/${next}` : newPath);
+    // With localePrefix: "as-needed", default locale (ko) has no prefix in the URL
+    if (locale === "en") {
+      router.push(pathname.replace(/^\/en/, "") || "/");
+    } else {
+      router.push(`/en${pathname}`);
+    }
   };
 
   return (

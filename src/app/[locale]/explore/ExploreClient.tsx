@@ -114,7 +114,6 @@ export function ExploreClient({ categories }: ExploreClientProps) {
                 isActive && "ring-2 ring-primary ring-offset-2 ring-offset-background"
               )}
             >
-              <span className="text-2xl leading-none">{cat.emoji ?? "🎵"}</span>
               <span className="mt-1 text-sm font-semibold text-white leading-tight">{cat.name}</span>
               <span className="text-[10px] text-white/60">{cat._count.playlists} playlists</span>
             </motion.button>
@@ -134,7 +133,6 @@ export function ExploreClient({ categories }: ExploreClientProps) {
             className="mt-8"
           >
             <div className="mb-6 flex items-center gap-2">
-              <span className="text-2xl">{activeCategory.emoji}</span>
               <div>
                 <h2 className="text-xl font-bold">{activeCategory.name}</h2>
                 {activeCategory.description && (
