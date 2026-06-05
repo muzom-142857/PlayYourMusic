@@ -21,16 +21,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
-    Spotify({
-      clientId: process.env.SPOTIFY_CLIENT_ID!,
-      clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
-      authorization:
-        "https://accounts.spotify.com/authorize?scope=streaming,user-read-email,user-read-private,playlist-read-private",
-    }),
-    Apple({
-      clientId: process.env.APPLE_CLIENT_ID!,
-      clientSecret: process.env.APPLE_CLIENT_SECRET!,
-    }),
+    // Spotify({
+    //   clientId: process.env.SPOTIFY_CLIENT_ID!,
+    //   clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
+    //   authorization:
+    //   "https://accounts.spotify.com/authorize?scope=streaming,user-read-email,user-read-private,playlist-read-private",
+    // }),
+    // Apple({
+    //  clientId: process.env.APPLE_CLIENT_ID!,
+    //  clientSecret: process.env.APPLE_CLIENT_SECRET!,
+    // }),
     GitHub({
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
