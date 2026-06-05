@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MasonryGrid } from "@/components/playlist/MasonryGrid";
 import type { PlaylistDTO, PaginatedResponse } from "@/types";
@@ -16,6 +17,7 @@ async function fetchPlaylists(sort: FeedTab, page: number) {
 }
 
 function Feed({ sort }: { sort: FeedTab }) {
+  const t = useTranslations("home");
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useInfiniteQuery({
     queryKey: ["playlists", sort],
     queryFn: ({ pageParam }) => fetchPlaylists(sort, pageParam as number),
@@ -39,9 +41,7 @@ function Feed({ sort }: { sort: FeedTab }) {
   if (all.length === 0) {
     return (
       <div className="py-16 text-center text-sm text-muted-foreground">
-        {sort === "following"
-          ? "팔로우한 사람의 플레이리스트가 없습니다. 다른 사람을 팔로우해보세요!"
-          : "아직 플레이리스트가 없습니다. 첫 번째를 만들어보세요!"}
+        {sort === "following" ? t("emptyFollowing") : t("emptyPlaylists")}
       </div>
     );
   }
@@ -50,6 +50,7 @@ function Feed({ sort }: { sort: FeedTab }) {
 }
 
 export function HomeFeed() {
+  const t = useTranslations("home");
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState<FeedTab>("recommended");
 
@@ -57,9 +58,9 @@ export function HomeFeed() {
     <div>
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as FeedTab)} className="mb-6">
         <TabsList>
-          <TabsTrigger value="recommended">추천</TabsTrigger>
-          {session?.user && <TabsTrigger value="following">팔로잉</TabsTrigger>}
-          <TabsTrigger value="newest">최신</TabsTrigger>
+          <TabsTrigger value="recommended">{t("tabs.recommended")}</TabsTrigger>
+          {session?.user && <TabsTrigger value="following">{t("tabs.following")}</TabsTrigger>}
+          <TabsTrigger value="newest">{t("tabs.newest")}</TabsTrigger>
         </TabsList>
       </Tabs>
       <Feed sort={activeTab} />

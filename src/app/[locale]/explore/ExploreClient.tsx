@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { MasonryGrid } from "@/components/playlist/MasonryGrid";
@@ -53,6 +54,7 @@ async function fetchCategoryPlaylists(slug: string, page: number) {
 }
 
 function CategoryPlaylists({ slug }: { slug: string }) {
+  const t = useTranslations("explore");
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useInfiniteQuery({
     queryKey: ["explore", slug],
     queryFn: ({ pageParam }) => fetchCategoryPlaylists(slug, pageParam as number),
@@ -76,7 +78,7 @@ function CategoryPlaylists({ slug }: { slug: string }) {
   if (playlists.length === 0) {
     return (
       <p className="py-12 text-center text-sm text-muted-foreground">
-        이 카테고리에는 아직 플레이리스트가 없습니다.
+        {t("empty")}
       </p>
     );
   }
@@ -92,6 +94,7 @@ function CategoryPlaylists({ slug }: { slug: string }) {
 }
 
 export function ExploreClient({ categories }: ExploreClientProps) {
+  const t = useTranslations("explore");
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
   const activeCategory = categories.find((c) => c.slug === activeSlug);
 
@@ -115,7 +118,7 @@ export function ExploreClient({ categories }: ExploreClientProps) {
               )}
             >
               <span className="mt-1 text-sm font-semibold text-white leading-tight">{cat.name}</span>
-              <span className="text-[10px] text-white/60">{cat._count.playlists} playlists</span>
+              <span className="text-[10px] text-white/60">{t("playlistCount", { count: cat._count.playlists })}</span>
             </motion.button>
           );
         })}
@@ -147,7 +150,7 @@ export function ExploreClient({ categories }: ExploreClientProps) {
 
       {!activeSlug && (
         <p className="mt-10 text-center text-sm text-muted-foreground">
-          카테고리를 선택해 플레이리스트를 탐색해보세요
+          {t("selectHint")}
         </p>
       )}
     </div>

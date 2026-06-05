@@ -12,15 +12,23 @@
   "home": {
     "trending": "Trending Playlists",
     "following": "From People You Follow",
-    "recommended": "Recommended for You"
+    "recommended": "Recommended for You",
+    "tabs": {
+      "recommended": "Recommended",
+      "following": "Following",
+      "newest": "New"
+    },
+    "emptyFollowing": "No playlists from people you follow yet. Follow someone!",
+    "emptyPlaylists": "No playlists yet. Create the first one!"
   },
   "playlist": {
     "tracks": "Tracks",
+    "trackCount": "{count} tracks",
     "likes": "Likes",
     "comments": "Comments",
     "play": "Play",
     "addTrack": "Add Track",
-    "sharePlaylist": "Share Playlist",
+    "sharePlaylist": "Share",
     "likePlaylist": "Like",
     "unlikePlaylist": "Unlike",
     "editPlaylist": "Edit",
@@ -39,41 +47,72 @@
     "externalLink": "Open in external app",
     "nowPlaying": "Now Playing"
   },
+  "explore": {
+    "title": "Explore",
+    "playlistCount": "{count} playlists",
+    "empty": "No playlists in this category yet.",
+    "selectHint": "Select a category to browse playlists"
+  },
   "search": {
     "placeholder": "Search playlists, tracks, artists, or users",
     "results": "Results",
     "noResults": "No results found",
+    "submit": "Search",
     "filters": {
       "all": "All",
+      "allPlatforms": "All Platforms",
       "playlists": "Playlists",
       "users": "Users",
       "category": "Category",
+      "filter": "Filter",
+      "sortLabel": "Sort",
+      "platformLabel": "Platform",
       "sort": {
         "relevance": "Relevance",
         "popular": "Most Popular",
         "newest": "Newest",
         "most_tracks": "Most Tracks"
       }
-    }
+    },
+    "resultSummary": "Results for \"{query}\" — {count} found",
+    "resultNoCount": "Results for \"{query}\"",
+    "searchHint": "Search playlists, tracks, artists, or users"
   },
   "auth": {
     "login": "Login",
     "register": "Sign Up",
+    "newAccount": "Create a new account",
     "email": "Email",
     "password": "Password",
+    "passwordHint": "Password (min 8 characters)",
+    "name": "Name",
     "continueWith": "Continue with {provider}",
     "or": "or",
     "forgotPassword": "Forgot password?",
     "noAccount": "Don't have an account?",
-    "hasAccount": "Already have an account?"
+    "hasAccount": "Already have an account?",
+    "loginLink": "Login",
+    "registerLink": "Sign Up"
   },
   "user": {
     "follow": "Follow",
     "unfollow": "Unfollow",
-    "followers": "Followers",
     "following": "Following",
+    "followers": "Followers",
     "playlists": "Playlists",
-    "editProfile": "Edit Profile"
+    "editProfile": "Edit Profile",
+    "noPlaylists": "No public playlists yet.",
+    "createFirstPlaylist": "Create first playlist"
+  },
+  "settings": {
+    "title": "Settings",
+    "avatar": "Profile Photo",
+    "changePhoto": "Change Photo",
+    "accountInfo": "Account Info",
+    "username": "Username",
+    "displayName": "Display Name",
+    "bio": "Bio",
+    "bioPlaceholder": "Tell us about yourself (max 200 characters)"
   },
   "common": {
     "loading": "Loading...",

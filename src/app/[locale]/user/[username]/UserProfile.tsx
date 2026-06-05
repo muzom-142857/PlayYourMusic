@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { UserPlus, UserCheck, Settings, Music2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -33,6 +33,7 @@ interface UserProfileProps {
 
 export function UserProfile({ user: initialUser, isOwnProfile }: UserProfileProps) {
   const locale = useLocale();
+  const t = useTranslations("user");
   const queryClient = useQueryClient();
   const [user, setUser] = useState(initialUser);
 
@@ -101,15 +102,15 @@ export function UserProfile({ user: initialUser, isOwnProfile }: UserProfileProp
             <div className="flex items-center gap-5 text-sm">
               <span>
                 <strong className="text-foreground">{formatCount(user._count.playlists)}</strong>
-                <span className="text-muted-foreground ml-1">플레이리스트</span>
+                <span className="text-muted-foreground ml-1">{t("playlists")}</span>
               </span>
               <span>
                 <strong className="text-foreground">{formatCount(user._count.followers)}</strong>
-                <span className="text-muted-foreground ml-1">팔로워</span>
+                <span className="text-muted-foreground ml-1">{t("followers")}</span>
               </span>
               <span>
                 <strong className="text-foreground">{formatCount(user._count.following)}</strong>
-                <span className="text-muted-foreground ml-1">팔로잉</span>
+                <span className="text-muted-foreground ml-1">{t("following")}</span>
               </span>
             </div>
           </div>
@@ -120,7 +121,7 @@ export function UserProfile({ user: initialUser, isOwnProfile }: UserProfileProp
               <Button variant="outline" size="sm" asChild>
                 <Link href={`/${locale}/settings`}>
                   <Settings className="mr-1.5 h-3.5 w-3.5" />
-                  프로필 편집
+                  {t("editProfile")}
                 </Link>
               </Button>
             ) : (
@@ -133,12 +134,12 @@ export function UserProfile({ user: initialUser, isOwnProfile }: UserProfileProp
                 {user.isFollowing ? (
                   <>
                     <UserCheck className="mr-1.5 h-3.5 w-3.5" />
-                    팔로잉
+                    {t("following")}
                   </>
                 ) : (
                   <>
                     <UserPlus className="mr-1.5 h-3.5 w-3.5" />
-                    팔로우
+                    {t("follow")}
                   </>
                 )}
               </Button>
@@ -152,16 +153,16 @@ export function UserProfile({ user: initialUser, isOwnProfile }: UserProfileProp
       {/* Playlists */}
       <div className="px-4 py-6 lg:px-6">
         <h2 className="mb-4 text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-          플레이리스트
+          {t("playlists")}
         </h2>
 
         {user.playlists.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
             <Music2 className="h-10 w-10 opacity-20" />
-            <p className="text-sm">아직 공개된 플레이리스트가 없습니다.</p>
+            <p className="text-sm">{t("noPlaylists")}</p>
             {isOwnProfile && (
               <Button variant="outline" size="sm" asChild>
-                <Link href={`/${locale}/playlist/new`}>첫 번째 플레이리스트 만들기</Link>
+                <Link href={`/${locale}/playlist/new`}>{t("createFirstPlaylist")}</Link>
               </Button>
             )}
           </div>

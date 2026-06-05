@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Heart, Play, Music2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { cn, formatCount } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,7 @@ interface PlaylistCardProps {
 
 export function PlaylistCard({ playlist, onPlay, style }: PlaylistCardProps) {
   const locale = useLocale();
+  const t = useTranslations("playlist");
   const { data: session } = useSession();
   const queryClient = useQueryClient();
 
@@ -110,7 +111,7 @@ export function PlaylistCard({ playlist, onPlay, style }: PlaylistCardProps) {
             {playlist._count && playlist._count.tracks > 0 && (
               <div className="space-y-0.5">
                 <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
-                  {playlist.trackCount} tracks
+                  {t("trackCount", { count: playlist.trackCount })}
                 </p>
               </div>
             )}

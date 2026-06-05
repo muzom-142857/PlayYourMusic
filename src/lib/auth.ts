@@ -1,6 +1,5 @@
 import NextAuth from "next-auth";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import type { Adapter, AdapterUser } from "next-auth/adapters";
+import type { Adapter } from "next-auth/adapters";
 import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
 import Credentials from "next-auth/providers/credentials";
@@ -13,6 +12,11 @@ const credentialsSchema = z.object({
   password: z.string().min(8),
 });
 
+// ── Field mapping helpers ────────────────────────────────────────────────────
+// Our schema uses `avatarUrl` instead of Auth.js's expected `image` field.
+// PrismaAdapter would pass `image` to Prisma.user.create/update and throw.
+// We build a minimal hand-rolled adapter that handles the mapping correctly.
+
 async function generateUsername(email: string): Promise<string> {
   const base = email.split("@")[0].replace(/[^a-z0-9_]/gi, "").toLowerCase() || "user";
   let username = base;
@@ -23,13 +27,95 @@ async function generateUsername(email: string): Promise<string> {
   return username;
 }
 
-// Wrap PrismaAdapter to auto-generate username (required field unknown to Auth.js)
-const baseAdapter = PrismaAdapter(prisma) as Adapter;
+type RawUser = {
+  id: string;
+  name: string;
+  email: string;
+  avatarUrl: string | null;
+  updatedAt: Date;
+  createdAt: Date;
+  username: string;
+  bio: string | null;
+};
+
+function toAdapterUser(u: RawUser) {
+  return { id: u.id, name: u.name, email: u.email, emailVerified: null, image: u.avatarUrl };
+}
+
+// Minimal adapter — only the methods Auth.js actually calls
 const adapter: Adapter = {
-  ...baseAdapter,
-  async createUser(user: AdapterUser) {
-    const username = await generateUsername(user.email ?? "user");
-    return baseAdapter.createUser!({ ...user, username } as AdapterUser);
+  async createUser(data) {
+    const username = await generateUsername(data.email ?? "user");
+    const u = await prisma.user.create({
+      data: {
+        name: data.name ?? data.email.split("@")[0],
+        email: data.email,
+        username,
+        avatarUrl: data.image ?? null,
+      },
+    });
+    return toAdapterUser(u as RawUser);
+  },
+  async getUser(id) {
+    const u = await prisma.user.findUnique({ where: { id } });
+    return u ? toAdapterUser(u as RawUser) : null;
+  },
+  async getUserByEmail(email) {
+    const u = await prisma.user.findUnique({ where: { email } });
+    return u ? toAdapterUser(u as RawUser) : null;
+  },
+  async updateUser({ id, image, name, email }) {
+    const u = await prisma.user.update({
+      where: { id },
+      data: {
+        ...(name !== undefined && { name: name ?? undefined }),
+        ...(email !== undefined && { email }),
+        ...(image !== undefined && { avatarUrl: image }),
+      },
+    });
+    return toAdapterUser(u as RawUser);
+  },
+  async deleteUser(id) {
+    await prisma.user.delete({ where: { id } });
+  },
+  async linkAccount(account) {
+    await prisma.account.create({ data: account });
+  },
+  async unlinkAccount({ provider, providerAccountId }) {
+    await prisma.account.delete({ where: { provider_providerAccountId: { provider, providerAccountId } } });
+  },
+  async createSession(data) {
+    return prisma.session.create({ data });
+  },
+  async getSessionAndUser(sessionToken) {
+    const row = await prisma.session.findUnique({
+      where: { sessionToken },
+      include: { user: true },
+    });
+    if (!row) return null;
+    const { user, ...session } = row;
+    return { session, user: toAdapterUser(user as RawUser) };
+  },
+  async updateSession({ sessionToken, ...data }) {
+    return prisma.session.update({ where: { sessionToken }, data });
+  },
+  async deleteSession(sessionToken) {
+    await prisma.session.delete({ where: { sessionToken } });
+  },
+  async getUserByAccount({ provider, providerAccountId }) {
+    const account = await prisma.account.findUnique({
+      where: { provider_providerAccountId: { provider, providerAccountId } },
+      include: { user: true },
+    });
+    return account ? toAdapterUser(account.user as RawUser) : null;
+  },
+  async createVerificationToken(data) {
+    return prisma.verificationToken.create({ data });
+  },
+  async useVerificationToken({ identifier, token }) {
+    return prisma.verificationToken
+      .delete({ where: { identifier_token: { identifier, token } } })
+      .catch(() => null);
   },
 };
 
@@ -40,16 +126,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
-    // Spotify({
-    //   clientId: process.env.SPOTIFY_CLIENT_ID!,
-    //   clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
-    //   authorization:
-    //   "https://accounts.spotify.com/authorize?scope=streaming,user-read-email,user-read-private,playlist-read-private",
-    // }),
-    // Apple({
-    //  clientId: process.env.APPLE_CLIENT_ID!,
-    //  clientSecret: process.env.APPLE_CLIENT_SECRET!,
-    // }),
     GitHub({
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
@@ -63,17 +139,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           where: { email: parsed.data.email },
           include: { accounts: { where: { provider: "credentials" } } },
         });
-
         if (!user) return null;
 
-        const credentialsAccount = user.accounts[0];
-        if (!credentialsAccount?.access_token) return null;
+        const credAccount = user.accounts[0];
+        if (!credAccount?.access_token) return null;
 
-        const isValid = await bcrypt.compare(
-          parsed.data.password,
-          credentialsAccount.access_token
-        );
-        if (!isValid) return null;
+        const valid = await bcrypt.compare(parsed.data.password, credAccount.access_token);
+        if (!valid) return null;
 
         return { id: user.id, email: user.email, name: user.name };
       },
@@ -85,13 +157,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     session({ session, user }) {
-      if (user && session.user) {
-        session.user.id = user.id;
-      }
+      if (user && session.user) session.user.id = user.id;
       return session;
-    },
-    async signIn() {
-      return true;
     },
   },
 });

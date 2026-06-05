@@ -18,25 +18,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MasonryGrid } from "@/components/playlist/MasonryGrid";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { PlaylistDTO, PaginatedResponse, CategoryDTO } from "@/types";
 
-const PLATFORMS = [
-  { value: "all", label: "전체 플랫폼" },
-  { value: "YOUTUBE", label: "YouTube" },
-  { value: "SPOTIFY", label: "Spotify" },
-  { value: "SOUNDCLOUD", label: "SoundCloud" },
-  { value: "APPLE_MUSIC", label: "Apple Music" },
-];
-
-const SORT_OPTIONS = [
-  { value: "relevance", label: "관련도순" },
-  { value: "popular", label: "인기순" },
-  { value: "newest", label: "최신순" },
-  { value: "most_tracks", label: "트랙 많은 순" },
-];
+const PLATFORM_VALUES = ["all", "YOUTUBE", "SPOTIFY", "SOUNDCLOUD", "APPLE_MUSIC"] as const;
+const PLATFORM_BRAND: Record<string, string> = {
+  all: "", YOUTUBE: "YouTube", SPOTIFY: "Spotify", SOUNDCLOUD: "SoundCloud", APPLE_MUSIC: "Apple Music",
+};
+const SORT_VALUES = ["relevance", "popular", "newest", "most_tracks"] as const;
 
 interface SearchFilters {
   sort: string;
@@ -86,6 +77,7 @@ async function fetchSearch(
 
 export function SearchClient({ categories }: SearchClientProps) {
   const locale = useLocale();
+  const t = useTranslations("search");
   const [query, setQuery] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
   const [filters, setFilters] = useState<SearchFilters>({
@@ -135,7 +127,7 @@ export function SearchClient({ categories }: SearchClientProps) {
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="플레이리스트, 트랙, 아티스트 또는 사용자 검색..."
+            placeholder={t("placeholder")}
             className="pl-9 pr-9 h-11 rounded-full"
           />
           {query && (
@@ -148,7 +140,7 @@ export function SearchClient({ categories }: SearchClientProps) {
             </button>
           )}
         </div>
-        <Button type="submit" className="rounded-full px-5">검색</Button>
+        <Button type="submit" className="rounded-full px-5">{t("submit")}</Button>
       </form>
 
       {/* Filters */}
@@ -168,7 +160,7 @@ export function SearchClient({ categories }: SearchClientProps) {
                 : "border-border text-muted-foreground hover:border-foreground"
             )}
           >
-            전체
+            {t("filters.all")}
           </button>
           {categories.map((cat) => (
             <button
@@ -193,7 +185,7 @@ export function SearchClient({ categories }: SearchClientProps) {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-1.5 rounded-full">
                   <SlidersHorizontal className="h-3.5 w-3.5" />
-                  필터
+                  {t("filters.filter")}
                   {activeFiltersCount > 0 && (
                     <Badge variant="secondary" className="ml-1 h-4 w-4 p-0 text-[10px] flex items-center justify-center">
                       {activeFiltersCount}
@@ -202,26 +194,26 @@ export function SearchClient({ categories }: SearchClientProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44">
-                <DropdownMenuLabel className="text-xs">정렬</DropdownMenuLabel>
+                <DropdownMenuLabel className="text-xs">{t("filters.sortLabel")}</DropdownMenuLabel>
                 <DropdownMenuRadioGroup
                   value={filters.sort}
                   onValueChange={(v) => setFilters((f) => ({ ...f, sort: v }))}
                 >
-                  {SORT_OPTIONS.map((o) => (
-                    <DropdownMenuRadioItem key={o.value} value={o.value} className="text-sm">
-                      {o.label}
+                  {SORT_VALUES.map((v) => (
+                    <DropdownMenuRadioItem key={v} value={v} className="text-sm">
+                      {t(`filters.sort.${v}`)}
                     </DropdownMenuRadioItem>
                   ))}
                 </DropdownMenuRadioGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuLabel className="text-xs">플랫폼</DropdownMenuLabel>
+                <DropdownMenuLabel className="text-xs">{t("filters.platformLabel")}</DropdownMenuLabel>
                 <DropdownMenuRadioGroup
                   value={filters.platform}
                   onValueChange={(v) => setFilters((f) => ({ ...f, platform: v }))}
                 >
-                  {PLATFORMS.map((p) => (
-                    <DropdownMenuRadioItem key={p.value} value={p.value} className="text-sm">
-                      {p.label}
+                  {PLATFORM_VALUES.map((v) => (
+                    <DropdownMenuRadioItem key={v} value={v} className="text-sm">
+                      {v === "all" ? t("filters.allPlatforms") : PLATFORM_BRAND[v]}
                     </DropdownMenuRadioItem>
                   ))}
                 </DropdownMenuRadioGroup>
@@ -241,7 +233,7 @@ export function SearchClient({ categories }: SearchClientProps) {
             className="flex flex-col items-center gap-3 py-24 text-muted-foreground"
           >
             <Search className="h-10 w-10 opacity-20" />
-            <p className="text-sm">플레이리스트, 트랙, 아티스트, 사용자를 검색해보세요</p>
+            <p className="text-sm">{t("searchHint")}</p>
           </motion.div>
         ) : status === "pending" ? (
           <motion.div key="loading" className="flex justify-center py-16">
@@ -250,14 +242,15 @@ export function SearchClient({ categories }: SearchClientProps) {
         ) : (
           <motion.div key={submittedQuery} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <p className="mb-4 text-sm text-muted-foreground">
-              <strong className="text-foreground">&quot;{submittedQuery}&quot;</strong> 검색 결과{" "}
-              {total > 0 ? `— 플레이리스트 ${total}개` : ""}
+              {total > 0
+                ? t("resultSummary", { query: submittedQuery, count: total })
+                : t("resultNoCount", { query: submittedQuery })}
             </p>
 
             {/* Users */}
             {users.length > 0 && (
               <div className="mb-8">
-                <h2 className="mb-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide">사용자</h2>
+                <h2 className="mb-3 text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t("filters.users")}</h2>
                 <div className="flex flex-wrap gap-3">
                   {users.map((user) => (
                     <Link
@@ -272,7 +265,7 @@ export function SearchClient({ categories }: SearchClientProps) {
                       <div>
                         <p className="text-sm font-medium leading-tight">{user.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          @{user.username} · {user._count.playlists} playlists
+                          @{user.username}
                         </p>
                       </div>
                     </Link>
@@ -284,7 +277,7 @@ export function SearchClient({ categories }: SearchClientProps) {
             {/* Playlists */}
             {playlists.length === 0 ? (
               <div className="py-16 text-center text-sm text-muted-foreground">
-                검색 결과가 없습니다. 다른 키워드로 시도해보세요.
+                {t("noResults")}
               </div>
             ) : (
               <>
