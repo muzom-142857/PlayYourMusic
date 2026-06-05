@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { notFound, redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { auth } from "@/lib/auth";
