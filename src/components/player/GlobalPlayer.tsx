@@ -30,10 +30,12 @@ export function GlobalPlayer() {
   const currentTrack = usePlayerStore(selectCurrentTrack);
   const playlist = usePlayerStore((s) => s.playlist);
 
+  const platform = currentTrack ? detectPlatform(currentTrack.sourceUrl) : null;
+  const isAppleMusic = platform === "APPLE_MUSIC";
+
   return (
     <>
-      {/* Hidden audio adapters */}
-      {currentTrack && <PlatformAdapter url={currentTrack.sourceUrl} />}
+      {currentTrack && <PlatformAdapter key={currentTrack.sourceUrl} url={currentTrack.sourceUrl} />}
 
       <AnimatePresence>
         {currentTrack && playlist && (
@@ -46,7 +48,6 @@ export function GlobalPlayer() {
             className="fixed bottom-14 lg:bottom-0 left-0 right-0 z-50 border-t border-border/60 bg-background/95 backdrop-blur-md"
           >
             <div className="relative flex items-center gap-3 px-3 py-2 lg:px-6">
-              {/* Track info */}
               <Link
                 href={`/${locale}/playlist/${playlist.id}`}
                 className="flex items-center gap-2.5 min-w-0 w-44 shrink-0"
@@ -63,11 +64,24 @@ export function GlobalPlayer() {
                 </div>
               </Link>
 
-              {/* Controls + Progress */}
-              <div className="flex flex-1 flex-col items-center gap-1 relative">
-                <PlayerControls />
-                <PlayerProgress />
-              </div>
+              {isAppleMusic ? (
+                <div className="flex flex-1 items-center justify-center gap-2">
+                  <span className="text-xs text-muted-foreground">Apple Music</span>
+                  <a
+                    href={currentTrack.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary underline underline-offset-2"
+                  >
+                    {locale === "ko" ? "Apple Music에서 열기" : "Open in Apple Music"}
+                  </a>
+                </div>
+              ) : (
+                <div className="flex flex-1 flex-col items-center gap-1 relative">
+                  <PlayerControls />
+                  <PlayerProgress />
+                </div>
+              )}
             </div>
           </motion.div>
         )}

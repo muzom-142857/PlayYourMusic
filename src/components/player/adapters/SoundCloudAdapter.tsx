@@ -41,7 +41,14 @@ export function SoundCloudAdapter({ url }: { url: string }) {
 
     const handleMessage = (e: MessageEvent<string>) => {
       try {
-        const data = JSON.parse(e.data) as { method?: string; soundId?: string };
+        const data = JSON.parse(e.data) as { method?: string; soundcloud?: boolean };
+        if (data.method === "ready") {
+          setIsLoading(false);
+          // Autoplay if the store says we should be playing (e.g. skipped from another track)
+          if (usePlayerStore.getState().isPlaying) {
+            iframe.contentWindow?.postMessage(JSON.stringify({ method: "play" }), "*");
+          }
+        }
         if (data.method === "playProgress") setIsLoading(false);
         if (data.method === "play") setIsPlaying(true);
         if (data.method === "pause") setIsPlaying(false);

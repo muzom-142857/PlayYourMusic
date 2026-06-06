@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale } from "next-intl";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 
 export function LocaleSwitcher() {
@@ -10,12 +10,7 @@ export function LocaleSwitcher() {
   const pathname = usePathname();
 
   const toggle = () => {
-    // With localePrefix: "as-needed", default locale (ko) has no prefix in the URL
-    if (locale === "en") {
-      router.push(pathname.replace(/^\/en/, "") || "/");
-    } else {
-      router.push(`/en${pathname}`);
-    }
+    router.replace(pathname, { locale: locale === "ko" ? "en" : "ko" });
   };
 
   return (

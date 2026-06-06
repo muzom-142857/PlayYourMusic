@@ -10,6 +10,7 @@ const createSchema = z.object({
   isPublic: z.boolean().default(true),
   tagNames: z.array(z.string().max(30)).max(10).default([]),
   categoryIds: z.array(z.string()).max(5).default([]),
+  coverUrl: z.string().url().nullable().optional(),
 });
 
 const listSchema = z.object({
@@ -115,13 +116,14 @@ export async function POST(request: Request) {
   const parsed = createSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
 
-  const { title, description, isPublic, tagNames, categoryIds } = parsed.data;
+  const { title, description, isPublic, tagNames, categoryIds, coverUrl } = parsed.data;
 
   const playlist = await prisma.playlist.create({
     data: {
       title,
       description,
       isPublic,
+      coverUrl: coverUrl ?? null,
       userId: session.user.id,
       tags: {
         connectOrCreate: tagNames.map((name) => ({
