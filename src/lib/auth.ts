@@ -101,7 +101,23 @@ const adapter: Adapter = {
     await prisma.user.delete({ where: { id } });
   },
   async linkAccount(account) {
-    await prisma.account.create({ data: account });
+    const {
+      userId, type, provider, providerAccountId,
+      refresh_token, access_token, expires_at,
+      token_type, scope, id_token, session_state,
+    } = account;
+    await prisma.account.create({
+      data: {
+        userId, type, provider, providerAccountId,
+        refresh_token: refresh_token ?? null,
+        access_token: access_token ?? null,
+        expires_at: expires_at ?? null,
+        token_type: token_type ?? null,
+        scope: scope ?? null,
+        id_token: id_token ?? null,
+        session_state: session_state ?? null,
+      },
+    });
   },
   async unlinkAccount({ provider, providerAccountId }) {
     await prisma.account.delete({
@@ -196,6 +212,7 @@ export const enabledOAuthProviders = {
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter,
   secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
+  trustHost: true,
   providers,
   // JWT strategy: avoids database session writes which are buggy
   // with credentials provider in next-auth v5 beta.

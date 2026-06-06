@@ -11,7 +11,9 @@
 각각 어떻게 구하는지는 아래 단계별 안내에 나와 있습니다.
 
 ```
-NEXTAUTH_SECRET      = xCkAOvo0xms/LsfyiW2hnwHiRKPcyI0bjNJa3Kz9N1c=
+AUTH_URL             = https://playyourmusic.up.railway.app
+AUTH_SECRET          = xCkAOvo0xms/LsfyiW2hnwHiRKPcyI0bjNJa3Kz9N1c=
+AUTH_TRUST_HOST      = true
 GOOGLE_CLIENT_ID     = 
 GOOGLE_CLIENT_SECRET = 
 GITHUB_CLIENT_ID     = 
@@ -176,7 +178,9 @@ NEXT_PUBLIC_R2_PUBLIC_URL       = (위와 동일한 값)
 4. 아래 내용을 복사해서 붙여넣은 뒤, 각 `여기에_입력` 부분을 메모장에 저장해둔 값으로 교체:
 
 ```
-NEXTAUTH_SECRET=xCkAOvo0xms/LsfyiW2hnwHiRKPcyI0bjNJa3Kz9N1c=
+AUTH_URL=https://playyourmusic.up.railway.app
+AUTH_SECRET=xCkAOvo0xms/LsfyiW2hnwHiRKPcyI0bjNJa3Kz9N1c=
+AUTH_TRUST_HOST=true
 
 GOOGLE_CLIENT_ID=여기에_입력
 GOOGLE_CLIENT_SECRET=여기에_입력
