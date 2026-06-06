@@ -15,6 +15,7 @@ import {
 import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { LocaleSwitcher } from "@/components/common/LocaleSwitcher";
 import { signOut, useSession } from "next-auth/react";
+import { localePath } from "@/lib/locale-path";
 
 export function Header() {
   const t = useTranslations("nav");
@@ -25,13 +26,13 @@ export function Header() {
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md">
       <div className="flex h-14 items-center gap-4 px-4 lg:px-6">
         {/* Logo */}
-        <Link href={`/${locale}`} className="flex items-center gap-2 font-bold tracking-tight">
+        <Link href={localePath(locale, "")} className="flex items-center gap-2 font-bold tracking-tight">
           <span className="text-base text-foreground">PlayYourMusic</span>
         </Link>
 
         {/* Search */}
         <div className="flex-1 max-w-md">
-          <Link href={`/${locale}/search`}>
+          <Link href={localePath(locale, "/search")}>
             <div className="flex items-center gap-2 rounded-full bg-muted px-3 py-1.5 text-sm text-muted-foreground hover:bg-muted/80 transition-colors">
               <Search className="h-3.5 w-3.5" />
               <span>{t("search")}</span>
@@ -46,7 +47,7 @@ export function Header() {
           {session?.user ? (
             <>
               <Button variant="ghost" size="sm" asChild className="hidden sm:flex">
-                <Link href={`/${locale}/playlist/new`}>
+                <Link href={localePath(locale, "/playlist/new")}>
                   <Plus className="h-4 w-4 mr-1" />
                   {t("createPlaylist")}
                 </Link>
@@ -65,14 +66,14 @@ export function Header() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem asChild>
-                    <Link href={`/${locale}/settings`}>
+                    <Link href={localePath(locale, "/settings")}>
                       <User className="mr-2 h-4 w-4" />
                       {t("settings")}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    onClick={() => signOut({ callbackUrl: `/${locale}/login` })}
+                    onClick={() => signOut({ callbackUrl: localePath(locale, "/login") })}
                     className="text-destructive"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
@@ -83,7 +84,7 @@ export function Header() {
             </>
           ) : (
             <Button size="sm" asChild>
-              <Link href={`/${locale}/login`}>{t("login")}</Link>
+              <Link href={localePath(locale, "/login")}>{t("login")}</Link>
             </Button>
           )}
         </div>

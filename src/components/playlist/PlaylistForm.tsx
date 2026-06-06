@@ -17,6 +17,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { toast } from "sonner";
 import Image from "next/image";
 import type { PlaylistDTO, CategoryDTO } from "@/types";
+import { localePath } from "@/lib/locale-path";
 
 const formSchema = z.object({
   title: z.string().min(1, "제목을 입력하세요").max(100),
@@ -111,7 +112,7 @@ export function PlaylistForm({ playlist, categories }: PlaylistFormProps) {
       if (!res.ok) throw new Error("Failed");
       const saved: PlaylistDTO = await res.json();
       toast.success(isEdit ? "플레이리스트가 수정되었습니다." : "플레이리스트가 생성되었습니다!");
-      router.push(`/${locale}/playlist/${saved.id}`);
+      router.push(localePath(locale, `/playlist/${saved.id}`));
     } catch {
       toast.error("저장에 실패했습니다.");
     } finally {

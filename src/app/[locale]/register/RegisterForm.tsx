@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { localePath } from "@/lib/locale-path";
 
 export function RegisterForm() {
   const locale = useLocale();
@@ -41,13 +42,13 @@ export function RegisterForm() {
         email,
         password,
         redirect: false,
-        callbackUrl: `/${locale}`,
+        callbackUrl: localePath(locale, ""),
       });
       if (loginRes?.error) {
         toast.success(t("registerSuccess"));
-        window.location.href = `/${locale}/login`;
+        window.location.href = localePath(locale, "/login");
       } else {
-        window.location.href = `/${locale}`;
+        window.location.href = localePath(locale, "");
       }
     } catch {
       toast.error(t("registerError"));
@@ -98,7 +99,7 @@ export function RegisterForm() {
       </Button>
       <p className="text-center text-sm text-muted-foreground">
         {t("hasAccount")}{" "}
-        <Link href={`/${locale}/login`} className="text-foreground underline underline-offset-4 hover:text-primary">
+        <Link href={localePath(locale, "/login")} className="text-foreground underline underline-offset-4 hover:text-primary">
           {t("loginLink")}
         </Link>
       </p>

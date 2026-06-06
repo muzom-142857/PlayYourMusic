@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { cn, formatCount } from "@/lib/utils";
+import { localePath } from "@/lib/locale-path";
 
 interface PlaylistLikeButtonProps {
   playlistId: string;
@@ -36,7 +37,7 @@ export function PlaylistLikeButton({ playlistId, likeCount, isLiked }: PlaylistL
 
   const handleClick = () => {
     if (!session) {
-      router.push(`/${locale}/login`);
+      router.push(localePath(locale, "/login"));
       return;
     }
     mutation.mutate();

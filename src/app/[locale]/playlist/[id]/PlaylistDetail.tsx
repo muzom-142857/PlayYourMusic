@@ -20,6 +20,7 @@ import { CommentSection } from "@/components/playlist/CommentSection";
 import { useColorExtraction } from "@/hooks/useColorExtraction";
 import { usePlayer } from "@/hooks/usePlayer";
 import { formatCount } from "@/lib/utils";
+import { localePath } from "@/lib/locale-path";
 import type { PlaylistWithTracksDTO, TrackDTO } from "@/types";
 
 interface PlaylistDetailProps {
@@ -91,7 +92,7 @@ export function PlaylistDetail({ playlist: initialPlaylist, isOwner }: PlaylistD
     },
     onSuccess: () => {
       toast.success("플레이리스트가 삭제되었습니다.");
-      router.push(`/${locale}`);
+      router.push(localePath(locale, ""));
     },
     onError: () => toast.error("삭제에 실패했습니다."),
   });
@@ -141,7 +142,7 @@ export function PlaylistDetail({ playlist: initialPlaylist, isOwner }: PlaylistD
           </div>
 
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Link href={`/${locale}/user/${playlist.user.username}`} className="flex items-center gap-2 hover:text-foreground transition-colors">
+            <Link href={localePath(locale, `/user/${playlist.user.username}`)} className="flex items-center gap-2 hover:text-foreground transition-colors">
               <Avatar className="h-5 w-5">
                 <AvatarImage src={playlist.user.avatarUrl ?? undefined} />
                 <AvatarFallback className="text-[10px]">{playlist.user.name[0]}</AvatarFallback>
@@ -186,7 +187,7 @@ export function PlaylistDetail({ playlist: initialPlaylist, isOwner }: PlaylistD
             {isOwner && (
               <>
                 <Button variant="ghost" size="sm" asChild>
-                  <Link href={`/${locale}/playlist/${playlist.id}/edit`}>
+                  <Link href={localePath(locale, `/playlist/${playlist.id}/edit`)}>
                     <Edit className="mr-1.5 h-3.5 w-3.5" />
                     편집
                   </Link>

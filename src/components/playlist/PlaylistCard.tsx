@@ -8,6 +8,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { cn, formatCount } from "@/lib/utils";
+import { localePath } from "@/lib/locale-path";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { PlaylistDTO } from "@/types";
@@ -64,7 +65,7 @@ export function PlaylistCard({ playlist, onPlay, style }: PlaylistCardProps) {
       transition={{ duration: 0.3 }}
       style={style}
     >
-      <Link href={`/${locale}/playlist/${playlist.id}`} className="block group">
+      <Link href={localePath(locale, `/playlist/${playlist.id}`)} className="block group">
         <div
           className="relative overflow-hidden rounded-xl border border-border/60 bg-card transition-shadow hover:shadow-lg"
           style={{ minHeight }}

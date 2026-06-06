@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { Home, Compass, Search, Library } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { localePath } from "@/lib/locale-path";
 
 const navItems = [
   { key: "home" as const, href: "/", icon: Home },
@@ -22,10 +23,10 @@ export function BottomNav() {
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-border/60 bg-background/90 backdrop-blur-md">
       <div className="flex items-center justify-around py-1 safe-area-bottom">
         {navItems.map(({ key, href, icon: Icon }) => {
-          const fullHref = `/${locale}${href}`;
+          const fullHref = localePath(locale, href);
           const isActive =
             href === "/"
-              ? pathname === `/${locale}` || pathname === `/${locale}/`
+              ? pathname === localePath(locale, "") || pathname === localePath(locale, "/")
               : pathname.startsWith(fullHref);
 
           return (

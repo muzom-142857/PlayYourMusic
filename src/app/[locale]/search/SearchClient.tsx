@@ -21,6 +21,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { localePath } from "@/lib/locale-path";
 import type { PlaylistDTO, PaginatedResponse, CategoryDTO } from "@/types";
 
 const PLATFORM_VALUES = ["all", "YOUTUBE", "SPOTIFY", "SOUNDCLOUD", "APPLE_MUSIC"] as const;
@@ -255,7 +256,7 @@ export function SearchClient({ categories }: SearchClientProps) {
                   {users.map((user) => (
                     <Link
                       key={user.id}
-                      href={`/${locale}/user/${user.username}`}
+                      href={localePath(locale, `/user/${user.username}`)}
                       className="flex items-center gap-2.5 rounded-xl border border-border/60 bg-card px-4 py-2.5 hover:bg-accent transition-colors"
                     >
                       <Avatar className="h-8 w-8">

@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { PlaylistCard } from "@/components/playlist/PlaylistCard";
 import { formatCount } from "@/lib/utils";
+import { localePath } from "@/lib/locale-path";
 import type { PlaylistDTO } from "@/types";
 
 interface UserData {
@@ -119,7 +120,7 @@ export function UserProfile({ user: initialUser, isOwnProfile }: UserProfileProp
           <div className="flex items-center gap-2 shrink-0">
             {isOwnProfile ? (
               <Button variant="outline" size="sm" asChild>
-                <Link href={`/${locale}/settings`}>
+                <Link href={localePath(locale, "/settings")}>
                   <Settings className="mr-1.5 h-3.5 w-3.5" />
                   {t("editProfile")}
                 </Link>
@@ -162,7 +163,7 @@ export function UserProfile({ user: initialUser, isOwnProfile }: UserProfileProp
             <p className="text-sm">{t("noPlaylists")}</p>
             {isOwnProfile && (
               <Button variant="outline" size="sm" asChild>
-                <Link href={`/${locale}/playlist/new`}>{t("createFirstPlaylist")}</Link>
+                <Link href={localePath(locale, "/playlist/new")}>{t("createFirstPlaylist")}</Link>
               </Button>
             )}
           </div>

@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { localePath } from "@/lib/locale-path";
 
 type OAuthProviderId = "google" | "github";
 
@@ -29,7 +30,7 @@ export function LoginForm({ enabledOAuthProviders }: LoginFormProps) {
   const t = useTranslations("auth");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = sanitizeCallbackUrl(searchParams.get("callbackUrl"), `/${locale}`);
+  const callbackUrl = sanitizeCallbackUrl(searchParams.get("callbackUrl"), localePath(locale, ""));
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -137,7 +138,7 @@ export function LoginForm({ enabledOAuthProviders }: LoginFormProps) {
       <p className="text-muted-foreground text-center text-sm">
         {t("noAccount")}{" "}
         <Link
-          href={`/${locale}/register`}
+          href={localePath(locale, "/register")}
           className="text-foreground hover:text-primary underline underline-offset-4"
         >
           {t("registerLink")}

@@ -3,6 +3,13 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
+const r2PublicHostname = (() => {
+  try {
+    const url = process.env.NEXT_PUBLIC_R2_PUBLIC_URL ?? process.env.CLOUDFLARE_R2_PUBLIC_URL;
+    return url ? new URL(url).hostname : null;
+  } catch { return null; }
+})();
+
 const baseConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -13,8 +20,10 @@ const baseConfig: NextConfig = {
       { protocol: "https", hostname: "**.sndcdn.com" },
       { protocol: "https", hostname: "is1-ssl.mzstatic.com" },
       { protocol: "https", hostname: "**.r2.cloudflarestorage.com" },
+      { protocol: "https", hostname: "**.r2.dev" },
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
       { protocol: "https", hostname: "avatars.githubusercontent.com" },
+      ...(r2PublicHostname ? [{ protocol: "https" as const, hostname: r2PublicHostname }] : []),
     ],
   },
   experimental: {

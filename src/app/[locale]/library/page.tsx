@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PlaylistCard } from "@/components/playlist/PlaylistCard";
+import { localePath } from "@/lib/locale-path";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -15,7 +16,7 @@ export default async function LibraryPage({ params }: Props) {
   setRequestLocale(locale);
 
   const session = await auth();
-  if (!session?.user?.id) redirect(`/${locale}/login`);
+  if (!session?.user?.id) redirect(localePath(locale, "/login"));
 
   const t = await getTranslations("nav");
 
@@ -37,7 +38,7 @@ export default async function LibraryPage({ params }: Props) {
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">{t("library")}</h1>
         <Button asChild size="sm">
-          <Link href={`/${locale}/playlist/new`}>
+          <Link href={localePath(locale, "/playlist/new")}>
             <Plus className="mr-1.5 h-3.5 w-3.5" />
             새 플레이리스트
           </Link>
@@ -48,7 +49,7 @@ export default async function LibraryPage({ params }: Props) {
         <div className="flex flex-col items-center gap-4 py-20 text-muted-foreground">
           <p className="text-sm">아직 만든 플레이리스트가 없습니다.</p>
           <Button asChild>
-            <Link href={`/${locale}/playlist/new`}>첫 번째 플레이리스트 만들기</Link>
+            <Link href={localePath(locale, "/playlist/new")}>첫 번째 플레이리스트 만들기</Link>
           </Button>
         </div>
       ) : (
