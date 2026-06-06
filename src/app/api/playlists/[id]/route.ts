@@ -63,7 +63,8 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   if (!playlist) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (playlist.userId !== session.user.id) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
-  const body = await request.json();
+  let body: unknown;
+  try { body = await request.json(); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
   const parsed = updateSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
 

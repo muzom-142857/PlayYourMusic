@@ -24,17 +24,17 @@ export async function POST(_: Request, { params }: RouteContext) {
   const access = await requirePlaylistAccess(playlistId, session.user.id);
   if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
 
-  await prisma.$transaction([
-    prisma.playlistLike.upsert({
-      where: { userId_playlistId: { userId: session.user.id, playlistId } },
-      create: { userId: session.user.id, playlistId },
-      update: {},
-    }),
-    prisma.playlist.update({
+  const result = await prisma.playlistLike.createMany({
+    data: [{ userId: session.user.id, playlistId }],
+    skipDuplicates: true,
+  });
+
+  if (result.count > 0) {
+    await prisma.playlist.update({
       where: { id: playlistId },
       data: { likeCount: { increment: 1 } },
-    }),
-  ]);
+    });
+  }
 
   return NextResponse.json({ liked: true });
 }

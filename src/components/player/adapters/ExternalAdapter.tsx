@@ -19,8 +19,6 @@ export function ExternalAdapter({ url }: { url: string }) {
       destroy: () => {},
     };
     setAdapter(adapter);
-    // Open external link immediately on load
-    window.open(url, "_blank");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url]);
 

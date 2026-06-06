@@ -12,9 +12,16 @@ import type { PlayerAdapter } from "@/store/playerStore";
 export function AppleMusicAdapter({ url }: { url: string }) {
   const { setAdapter, setIsLoading } = usePlayerStore();
 
-  const embedUrl = url
-    .replace("music.apple.com", "embed.music.apple.com")
-    .replace(/\?.*$/, "");
+  const embedUrl = (() => {
+    try {
+      const u = new URL(url);
+      if (!u.hostname.startsWith("embed.")) u.hostname = `embed.${u.hostname}`;
+      u.search = "";
+      return u.toString();
+    } catch {
+      return null;
+    }
+  })();
 
   useEffect(() => {
     setIsLoading(false);
@@ -30,6 +37,8 @@ export function AppleMusicAdapter({ url }: { url: string }) {
     setAdapter(noop);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url]);
+
+  if (!embedUrl) return null;
 
   return (
     <iframe

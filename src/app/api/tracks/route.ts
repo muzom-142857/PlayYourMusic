@@ -22,11 +22,13 @@ export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = await request.json();
+  let body: unknown;
+  try { body = await request.json(); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
+  const bodyObj = body as Record<string, unknown>;
 
   // Handle reorder action
-  if (body.action === "reorder") {
-    const parsed = reorderSchema.safeParse(body);
+  if (bodyObj.action === "reorder") {
+    const parsed = reorderSchema.safeParse(bodyObj);
     if (!parsed.success) return NextResponse.json({ error: "Invalid" }, { status: 400 });
 
     const { playlistId, orderedIds } = parsed.data;
@@ -53,7 +55,7 @@ export async function POST(request: Request) {
   }
 
   // Add track
-  const parsed = addTrackSchema.safeParse(body);
+  const parsed = addTrackSchema.safeParse(bodyObj);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
 
   const { playlistId, sourceUrl, title: overrideTitle, artist: overrideArtist } = parsed.data;
@@ -68,24 +70,24 @@ export async function POST(request: Request) {
 
   const meta = await fetchTrackMetadata(sourceUrl);
 
-  const track = await prisma.track.create({
-    data: {
-      title: overrideTitle ?? meta.title,
-      artist: overrideArtist ?? meta.artist,
-      duration: meta.duration,
-      sourceUrl,
-      sourcePlatform: meta.sourcePlatform,
-      thumbnailUrl: meta.thumbnailUrl,
-      position: playlist._count.tracks,
-      playlistId,
-    },
-  });
-
-  // Update denormalized trackCount
-  await prisma.playlist.update({
-    where: { id: playlistId },
-    data: { trackCount: { increment: 1 } },
-  });
+  const [track] = await prisma.$transaction([
+    prisma.track.create({
+      data: {
+        title: overrideTitle ?? meta.title,
+        artist: overrideArtist ?? meta.artist,
+        duration: meta.duration,
+        sourceUrl,
+        sourcePlatform: meta.sourcePlatform,
+        thumbnailUrl: meta.thumbnailUrl,
+        position: playlist._count.tracks,
+        playlistId,
+      },
+    }),
+    prisma.playlist.update({
+      where: { id: playlistId },
+      data: { trackCount: { increment: 1 } },
+    }),
+  ]);
 
   return NextResponse.json(track, { status: 201 });
 }
@@ -107,11 +109,13 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  await prisma.track.delete({ where: { id: trackId } });
-  await prisma.playlist.update({
-    where: { id: track.playlistId },
-    data: { trackCount: { decrement: 1 } },
-  });
+  await prisma.$transaction([
+    prisma.track.delete({ where: { id: trackId } }),
+    prisma.playlist.update({
+      where: { id: track.playlistId },
+      data: { trackCount: { decrement: 1 } },
+    }),
+  ]);
 
   return new NextResponse(null, { status: 204 });
 }

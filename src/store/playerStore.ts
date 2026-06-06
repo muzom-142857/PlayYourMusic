@@ -22,6 +22,7 @@ interface PlayerState {
   isPlaying: boolean;
   isLoading: boolean;
   volume: number;
+  prevVolume: number;
   isMuted: boolean;
   progress: number; // 0–1
   duration: number; // seconds
@@ -57,6 +58,7 @@ const initialState: PlayerState = {
   isPlaying: false,
   isLoading: false,
   volume: 0.8,
+  prevVolume: 0.8,
   isMuted: false,
   progress: 0,
   duration: 0,
@@ -136,15 +138,17 @@ export const usePlayerStore = create<PlayerState & PlayerActions>()(
     setVolume: (volume) => {
       const clamped = Math.max(0, Math.min(1, volume));
       get().adapter?.setVolume(clamped);
-      set({ volume: clamped, isMuted: clamped === 0 });
+      set({ volume: clamped });
     },
 
     toggleMute: () => {
-      const { isMuted, volume, adapter } = get();
+      const { isMuted, volume, prevVolume, adapter } = get();
       if (isMuted) {
-        adapter?.setVolume(volume || 0.8);
-        set({ isMuted: false });
+        const restore = prevVolume || 0.8;
+        adapter?.setVolume(restore);
+        set({ isMuted: false, volume: restore });
       } else {
+        set({ prevVolume: volume });
         adapter?.setVolume(0);
         set({ isMuted: true });
       }

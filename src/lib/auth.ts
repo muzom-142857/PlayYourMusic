@@ -115,7 +115,7 @@ const adapter: Adapter = {
         token_type: token_type ?? null,
         scope: scope ?? null,
         id_token: id_token ?? null,
-        session_state: session_state ?? null,
+        session_state: typeof session_state === "string" ? session_state : null,
       },
     });
   },
